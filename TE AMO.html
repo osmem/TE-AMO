@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>Um universo para Sofia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,400;1,500&family=Jost:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --wine-0: #0b0308;
+    --wine-1: #1f0711;
+    --wine-2: #3a0a1b;
+    --glow: rgba(150, 26, 52, .42);
+    --purple: 124, 58, 237;
+    --rose-light: #fbd9e0;
+    --heart-size: min(78vw, 54vh, 500px);
+    --heart-size: min(78vw, 54dvh, 500px);
+
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  *, *::before, *::after { box-sizing: inherit; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); background: var(--wine-0); scroll-snap-type: y proximity; }
+  @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+  body {
+    margin: 0; min-height: 100%; overflow-x: hidden; position: relative;
+    color: #fff; font-family: "Jost", "Helvetica Neue", Arial, sans-serif;
+    animation: enter 1.6s ease-out both;
+  }
+  .bg {
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 58% 50% at 50% 50%, var(--glow), transparent 72%),
+      radial-gradient(circle at 5% 7%, rgba(var(--purple), .20), transparent 38%),
+      radial-gradient(circle at 97% 95%, rgba(var(--purple), .16), transparent 42%),
+      radial-gradient(ellipse at 50% 50%, var(--wine-2) 0%, var(--wine-1) 44%, var(--wine-0) 100%);
+  }
+  .tint { position: fixed; inset: 0; pointer-events: none; background-color: rgba(0, 0, 0, 0); transition: background-color 2s ease; }
+  @keyframes enter { from { opacity: 0; } to { opacity: 1; } }
+
+  #sky { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  .vignette {
+    position: fixed; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse at 50% 50%, transparent 52%, rgba(0, 0, 0, .55) 100%);
+  }
+
+  .screen {
+    position: relative; z-index: 2; scroll-snap-align: start;
+    min-height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    min-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: clamp(.9rem, 3.2vh, 2rem);
+    padding: 1.25rem max(1.25rem, env(safe-area-inset-left, 0px)) 1.25rem max(1.25rem, env(safe-area-inset-right, 0px));
+  }
+
+  .phrase {
+    margin: 0; max-width: 22em; text-align: center; text-wrap: balance;
+    font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+    font-style: italic; font-weight: 400; line-height: 1.3; letter-spacing: .03em;
+    font-size: clamp(1.1rem, .75rem + 1.9vw, 1.9rem);
+    color: var(--rose-light);
+    text-shadow: 0 2px 18px rgba(0, 0, 0, .55);
+  }
+
+  .heart-wrap {
+    position: relative; width: var(--heart-size); aspect-ratio: 100 / 90;
+    container-type: inline-size;
+  }
+  .heart-wrap::before {
+    content: ""; position: absolute; inset: -20%; pointer-events: none;
+    background: radial-gradient(circle, rgba(200, 24, 52, .30), transparent 62%);
+    animation: halo 2s ease-in-out infinite;
+  }
+  .heart {
+    position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; will-change: transform;
+    filter: drop-shadow(0 22px 34px rgba(0, 0, 0, .55)) drop-shadow(0 0 28px rgba(190, 20, 50, .28));
+    transform-origin: 50% 55%;
+    animation: beat 2s ease-in-out infinite;
+  }
+  /* Um batimento a cada 2 s: cresce ate 20% do ciclo (0,4 s) e volta ao normal */
+  @keyframes beat {
+    0% { transform: scale(1); }
+    20% { transform: scale(1.05); }
+    45%, 100% { transform: scale(1); }
+  }
+  @keyframes halo {
+    0%, 100% { opacity: .65; }
+    20% { opacity: 1; }
+    45% { opacity: .65; }
+  }
+
+  /* Onda em formato de coracao: nasce no pico da batida, expande devagar (4 s).
+     Duas ondas defasadas em 2 s = uma nova onda a cada batida. */
+  .wave {
+    position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible;
+    pointer-events: none; fill: none; opacity: 0; transform-origin: 50% 50%;
+    will-change: transform, opacity;
+    animation: wave 4s ease-out .4s infinite;
+  }
+  .wave.w2 { animation-delay: 2.4s; }
+  .wave path { vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+  .wave .soft { stroke: rgba(244, 63, 94, .20); stroke-width: 9; }
+  .wave .line { stroke: rgba(253, 164, 175, .70); stroke-width: 1.4; }
+  @keyframes wave {
+    0% { transform: scale(1); opacity: 0; }
+    8% { opacity: .7; }
+    100% { transform: scale(2.15); opacity: 0; }
+  }
+
+  .count {
+    position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%);
+    text-align: center; white-space: nowrap; text-shadow: 0 2px 14px rgba(60, 0, 15, .6);
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+  .days { line-height: 1; display: flex; align-items: baseline; justify-content: center; gap: 2.2cqw; }
+  #d {
+    font-family: "Cormorant Garamond", Georgia, serif; font-weight: 500;
+    font-size: 21cqw; letter-spacing: .01em;
+  }
+  #du {
+    font-family: "Cormorant Garamond", Georgia, serif; font-style: italic; font-weight: 400;
+    font-size: 8cqw; color: var(--rose-light);
+  }
+  #t {
+    margin-top: 2.6cqw; font-weight: 300; font-size: 7.4cqw; letter-spacing: .14em;
+    color: rgba(255, 240, 243, .92);
+  }
+
+  /* Sem override de prefers-reduced-motion: a batida e a onda sao o ponto central da pagina. */
+
+  .sky { overflow: hidden; }
+  .sky-bg, .stars { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+  .sky-bg { background: #14061f; }
+  .stars { opacity: 0; transition: opacity 2s ease; }
+  .stars .tw { animation: twinkle 5s ease-in-out infinite; }
+  @keyframes twinkle { 50% { opacity: .25; } }
+  .sun { position: absolute; z-index: 1; left: 50%; top: 80%; width: 130px; height: 130px; transform: translate(-50%, -50%); border-radius: 50%; transition: opacity 2s ease; }
+  .ground { position: absolute; z-index: 2; left: 0; bottom: 0; width: 100%; height: 27%; }
+  .sky-content { position: relative; z-index: 3; width: 100%; display: flex; flex-direction: column; align-items: center; gap: .8rem; text-align: center; padding: 3rem 0 1rem; }
+  .sky .more { z-index: 4; }
+  .sky h2, .mname, .msub, .sunline, .sky .label { text-shadow: 0 1px 14px rgba(15, 4, 24, .75); }
+  .sky h2 { margin: 0; font-family: "Cormorant Garamond", Georgia, serif; font-style: italic; font-weight: 400; font-size: clamp(1.5rem, 1rem + 2vw, 2.1rem); color: var(--rose-light); }
+  .bigmoon { width: min(46vw, 30vh, 280px); width: min(46vw, 30dvh, 280px); height: auto; aspect-ratio: 1; filter: drop-shadow(0 0 24px rgba(255, 214, 226, .28)); }
+  .mname { margin: .2rem 0 0; font-family: "Cormorant Garamond", Georgia, serif; font-weight: 500; font-size: clamp(1.4rem, 1rem + 1.6vw, 1.9rem); color: #fff; }
+  .msub, .sunline { margin: 0; font-weight: 300; letter-spacing: .06em; color: rgba(255, 240, 243, .92); }
+  .sunline { font-size: .9rem; }
+  .sky .label { margin: .6rem 0 0; font-weight: 300; letter-spacing: .08em; color: var(--rose-light); }
+  .sky .seg button { background: rgba(20, 6, 28, .55); color: var(--rose-light); }
+  .sky .seg button[aria-pressed="true"] { background: rgba(190, 24, 52, .78); color: #fff; border-color: rgba(253, 164, 175, .7); }
+
+  .more {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    bottom: max(.9rem, 1.6vh); width: 44px; height: 44px; display: grid; place-items: center;
+    color: rgba(251, 217, 224, .4); border-radius: 50%;
+  }
+  .more.up { bottom: auto; top: max(.9rem, 1.6vh); }
+  .more:hover { color: rgba(251, 217, 224, .85); }
+  .more:focus-visible, .seg button:focus-visible { outline: 2px solid rgba(253, 164, 175, .8); outline-offset: 2px; }
+  .more svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+  .panel { width: 100%; max-width: 28rem; display: flex; flex-direction: column; align-items: center; gap: 1.1rem; text-align: center; }
+  .panel h2 {
+    margin: 0 0 .4rem; font-family: "Cormorant Garamond", Georgia, serif; font-style: italic;
+    font-weight: 400; font-size: clamp(1.6rem, 1.1rem + 2vw, 2.2rem); color: var(--rose-light);
+  }
+  .panel .label { margin: 0; font-weight: 300; letter-spacing: .08em; color: rgba(251, 217, 224, .7); }
+  .seg { display: flex; flex-wrap: wrap; justify-content: center; gap: .6rem; }
+  .seg button {
+    font: inherit; font-weight: 300; min-height: 44px; padding: .5rem 1.1rem; cursor: pointer;
+    color: rgba(251, 217, 224, .8); background: rgba(255, 255, 255, .04);
+    border: 1px solid rgba(251, 217, 224, .28); border-radius: 999px;
+  }
+  .seg button[aria-pressed="true"] { color: #fff; background: rgba(190, 24, 52, .55); border-color: rgba(253, 164, 175, .6); }
+  .panel .note { margin: 0 0 .9rem; font-size: .9rem; line-height: 1.5; font-weight: 300; color: rgba(251, 217, 224, .6); }
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true"></div>
+<div class="tint" id="tint" aria-hidden="true"></div>
+<canvas id="sky" aria-hidden="true"></canvas>
+<div class="vignette" aria-hidden="true"></div>
+
+<main class="screen" id="topo">
+  <p class="phrase" lang="es">mejores dias de mi vida empezaron a</p>
+
+  <div class="heart-wrap">
+    <svg class="wave" viewBox="0 0 100 90" aria-hidden="true">
+      <path class="soft" d="M50 85 C20 62 3 44 3 26 C3 12 14 3 27 3 C36 3 45 8 50 17 C55 8 64 3 73 3 C86 3 97 12 97 26 C97 44 80 62 50 85 Z"/>
+      <path class="line" d="M50 85 C20 62 3 44 3 26 C3 12 14 3 27 3 C36 3 45 8 50 17 C55 8 64 3 73 3 C86 3 97 12 97 26 C97 44 80 62 50 85 Z"/>
+    </svg>
+    <svg class="wave w2" viewBox="0 0 100 90" aria-hidden="true">
+      <path class="soft" d="M50 85 C20 62 3 44 3 26 C3 12 14 3 27 3 C36 3 45 8 50 17 C55 8 64 3 73 3 C86 3 97 12 97 26 C97 44 80 62 50 85 Z"/>
+      <path class="line" d="M50 85 C20 62 3 44 3 26 C3 12 14 3 27 3 C36 3 45 8 50 17 C55 8 64 3 73 3 C86 3 97 12 97 26 C97 44 80 62 50 85 Z"/>
+    </svg>
+    <svg class="heart" viewBox="0 0 100 90" aria-hidden="true">
+      <defs>
+        <radialGradient id="body" cx="38%" cy="28%" r="85%">
+          <stop offset="0" stop-color="#ef3b52"/>
+          <stop offset=".45" stop-color="#c8102e"/>
+          <stop offset=".8" stop-color="#8a0b22"/>
+          <stop offset="1" stop-color="#5c0716"/>
+        </radialGradient>
+        <radialGradient id="shine" cx="30%" cy="20%" r="42%">
+          <stop offset="0" stop-color="#fff" stop-opacity=".20"/>
+          <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="depth" cx="50%" cy="40%" r="60%">
+          <stop offset=".6" stop-color="#2a0309" stop-opacity="0"/>
+          <stop offset="1" stop-color="#2a0309" stop-opacity=".45"/>
+        </radialGradient>
+        <path id="shape" d="M50 85 C20 62 3 44 3 26 C3 12 14 3 27 3 C36 3 45 8 50 17 C55 8 64 3 73 3 C86 3 97 12 97 26 C97 44 80 62 50 85 Z"/>
+      </defs>
+      <use href="#shape" fill="url(#body)"/>
+      <use href="#shape" fill="url(#depth)"/>
+      <use href="#shape" fill="url(#shine)"/>
+    </svg>
+
+    <div class="count" role="timer" aria-label="Tempo de relacionamento">
+      <div class="days"><span id="d">0</span><span id="du">dias</span></div>
+      <div id="t">00:00:00</div>
+    </div>
+  </div>
+
+  <a class="more" href="#ceu" aria-label="Ver o céu e a lua"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></a>
+</main>
+
+<section class="screen sky" id="ceu">
+  <div class="sky-bg" id="skyBg" aria-hidden="true"></div>
+  <svg class="stars" id="stars" aria-hidden="true"></svg>
+  <div class="sun" id="sun" aria-hidden="true"></div>
+  <svg class="ground" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true"><path d="M0 11 C14 5 28 13 48 8 C68 3 84 12 100 7 L100 30 L0 30 Z" fill="#12050f"/></svg>
+  <a class="more up" href="#topo" aria-label="Voltar ao contador"><svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg></a>
+
+  <div class="sky-content">
+    <h2 id="skyTitle">O céu de hoje</h2>
+    <svg class="bigmoon" viewBox="0 0 100 100" role="img" aria-label="Fase da lua">
+      <defs>
+        <radialGradient id="mbase" cx=".4" cy=".35" r=".75"><stop offset="0" stop-color="#f7f0e4"/><stop offset=".6" stop-color="#d9cebf"/><stop offset="1" stop-color="#a99e91"/></radialGradient>
+        <filter id="mblur" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="1.2"/></filter>
+        <filter id="msoft"><feGaussianBlur stdDeviation="2"/></filter>
+        <clipPath id="mdisc"><circle cx="50" cy="50" r="48"/></clipPath>
+        <mask id="mlit"><rect width="100" height="100" fill="#000"/><path id="moonLit" fill="#fff" filter="url(#mblur)"/></mask>
+      </defs>
+      <g id="moonRot">
+        <circle cx="50" cy="50" r="48" fill="rgba(52,34,84,.38)"/>
+        <g clip-path="url(#mdisc)"><g mask="url(#mlit)">
+          <circle cx="50" cy="50" r="48" fill="url(#mbase)"/>
+          <g filter="url(#msoft)" fill="#8d8377" opacity=".42">
+            <ellipse cx="38" cy="34" rx="13" ry="10"/><ellipse cx="56" cy="36" rx="8" ry="7"/><ellipse cx="62" cy="50" rx="11" ry="8"/>
+            <ellipse cx="28" cy="52" rx="12" ry="16"/><ellipse cx="36" cy="70" rx="8" ry="6"/><ellipse cx="76" cy="40" rx="5" ry="4"/>
+          </g>
+          <g fill="#7e7569" opacity=".3">
+            <circle cx="36" cy="49" r="2.6"/><circle cx="62" cy="68" r="3"/><circle cx="72" cy="58" r="2"/><circle cx="50" cy="66" r="2.2"/>
+            <circle cx="30" cy="66" r="1.5"/><circle cx="56" cy="24" r="1.6"/><circle cx="70" cy="30" r="1.2"/><circle cx="46" cy="14" r="1.4"/>
+            <circle cx="80" cy="52" r="1.3"/><circle cx="40" cy="30" r="1.1"/>
+          </g>
+          <g fill="#fff" opacity=".5"><circle cx="44" cy="82" r="2.4"/><circle cx="24" cy="41" r="1.8"/></g>
+        </g></g>
+        <circle cx="50" cy="50" r="47.6" fill="none" stroke="rgba(255,230,238,.18)" stroke-width=".6"/>
+      </g>
+    </svg>
+    <p class="mname" id="mName"></p>
+    <p class="msub" id="mSub"></p>
+    <p class="sunline" id="sunLine"></p>
+
+    <p class="label">Céu e lua</p>
+    <div class="seg" role="group" aria-label="Momento exibido">
+      <button type="button" data-moon="today">Hoje</button>
+      <button type="button" data-moon="start" id="moonStartBtn">Início</button>
+    </div>
+    <p class="label">Lugar</p>
+    <div class="seg" role="group" aria-label="Lugar do céu">
+      <button type="button" data-place="joinville">Joinville (Brasil)</button>
+      <button type="button" data-place="quito">Quito (Equador)</button>
+    </div>
+    <p class="label">Fundo da primeira tela</p>
+    <div class="seg" role="group" aria-label="Tom do fundo">
+      <button type="button" data-tint="on">Acompanha a hora</button>
+      <button type="button" data-tint="off">Fixo</button>
+    </div>
+  </div>
+</section>
+
+<script>
+/* ============================================================
+   CONFIGURACAO: unico lugar para alterar a data/hora de inicio.
+   Formato ISO com fuso: AAAA-MM-DDTHH:MM:SS-03:00
+   -03:00 = horario de Brasilia (fuso assumido; ajuste se necessario).
+   ============================================================ */
+const RELATIONSHIP_START = "2026-07-10T18:39:00-03:00";
+const SOUTHERN_HEMISPHERE = true; // true = Brasil: a lua crescente aparece iluminada do lado esquerdo
+
+/* ---------- Contador ---------- */
+(() => {
+  const start = new Date(RELATIONSHIP_START).getTime();
+  const elD = document.getElementById("d");
+  const elU = document.getElementById("du");
+  const elT = document.getElementById("t");
+  const p2 = n => String(n).padStart(2, "0");
+
+  function tick() {
+    const diff = Number.isNaN(start) ? 0 : Math.max(0, Date.now() - start);
+    const s = Math.floor(diff / 1000);
+    const d = Math.floor(s / 86400);
+    elD.textContent = d;
+    elU.textContent = d === 1 ? "dia" : "dias";
+    elT.textContent = p2(Math.floor((s % 86400) / 3600)) + ":" + p2(Math.floor((s % 3600) / 60)) + ":" + p2(s % 60);
+    setTimeout(tick, 1000 - (Date.now() % 1000) + 5);
+  }
+  tick();
+})();
+
+/* ---------- Ceu, lua e ajustes ---------- */
+(() => {
+  const PLACES = { // off = horas em relacao a UTC
+    joinville: { short: "Joinville", lat: -26.30, lon: -48.85, off: -3, zone: "America/Sao_Paulo" },
+    quito: { short: "Quito", lat: -0.18, lon: -78.47, off: -5, zone: "America/Guayaquil" } // Quito, Pichincha, Equador
+  };
+  let P = PLACES.joinville;
+  const startDate = new Date(RELATIONSHIP_START), hasStart = !isNaN(startDate);
+  const SYN = 29.530588853, REF = Date.UTC(2000, 0, 6, 18, 14); // lua nova de referencia
+  const NAMES = ["Lua nova", "Lua crescente", "Quarto crescente", "Lua gibosa crescente", "Lua cheia", "Lua gibosa minguante", "Quarto minguante", "Lua minguante"];
+  const $ = id => document.getElementById(id);
+  const rad = Math.PI / 180, clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+  const fmtDate = d => d.toLocaleDateString("pt-BR", { day: "numeric", month: "long", timeZone: P.zone });
+  const fmtTime = d => d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: P.zone });
+  const prefs = { moon: "today", tint: "on", place: "joinville" };
+  try {
+    const s = JSON.parse(localStorage.getItem("sofia-prefs") || "{}");
+    if (s.moon === "start") prefs.moon = "start";
+    if (s.tint === "off") prefs.tint = "off";
+    if (PLACES[s.place]) prefs.place = s.place;
+  } catch (e) {}
+
+  /* Lua: fase aproximada (mes sinodico medio) */
+  const phaseOf = t => ((((t - REF) / 864e5) % SYN) + SYN) % SYN / SYN; // 0 = nova, 0,5 = cheia
+  function drawMoon(t) {
+    const p = phaseOf(t), r = 48, k = Math.cos(2 * Math.PI * p), rx = (r * Math.abs(k)).toFixed(2), A = " A" + r + " " + r + " 0 0 ";
+    $("moonLit").setAttribute("d", p < .5
+      ? "M50 2" + A + "1 50 98 A" + rx + " " + r + " 0 0 " + (k > 0 ? 0 : 1) + " 50 2Z"
+      : "M50 2" + A + "0 50 98 A" + rx + " " + r + " 0 0 " + (k > 0 ? 1 : 0) + " 50 2Z");
+    $("moonRot").setAttribute("transform", SOUTHERN_HEMISPHERE ? "rotate(180 50 50)" : "");
+    return { name: NAMES[Math.floor(p * 8 + .5) % 8], il: Math.round((1 - k) / 2 * 100) };
+  }
+
+  /* Sol: posicao astronomica simplificada para Joinville */
+  function sunPos(t) {
+    const n = (t - Date.UTC(2000, 0, 1, 12)) / 864e5, g = (357.528 + .9856003 * n) * rad;
+    const lam = (280.460 + .9856474 * n + 1.915 * Math.sin(g) + .020 * Math.sin(2 * g)) * rad, eps = 23.439 * rad;
+    const ra = Math.atan2(Math.cos(eps) * Math.sin(lam), Math.cos(lam)), dec = Math.asin(Math.sin(eps) * Math.sin(lam));
+    let ha = (280.46061837 + 360.98564736629 * n + P.lon) * rad - ra; ha = Math.atan2(Math.sin(ha), Math.cos(ha));
+    const phi = P.lat * rad;
+    return { alt: Math.asin(Math.sin(phi) * Math.sin(dec) + Math.cos(phi) * Math.cos(dec) * Math.cos(ha)) / rad, ha: ha / rad };
+  }
+  function sunTimes(t) {
+    const loc = new Date(t + P.off * 36e5), d0 = Date.UTC(loc.getUTCFullYear(), loc.getUTCMonth(), loc.getUTCDate()) - P.off * 36e5;
+    let rise = null, set = null, prev = sunPos(d0).alt;
+    for (let m = 5; m <= 1440; m += 5) {
+      const a = sunPos(d0 + m * 6e4).alt;
+      if (prev < -.833 && a >= -.833 && rise === null) rise = d0 + m * 6e4;
+      if (prev >= -.833 && a < -.833 && set === null) set = d0 + m * 6e4;
+      prev = a;
+    }
+    return { rise, set };
+  }
+
+  /* Cores do ceu conforme a altura do sol: [altura, topo, meio, horizonte] */
+  const SK = [[-18, [5, 3, 15], [10, 5, 24], [20, 8, 32]], [-10, [10, 6, 32], [34, 14, 56], [70, 24, 72]], [-4, [30, 16, 64], [110, 36, 92], [200, 80, 100]],
+    [0, [64, 40, 110], [190, 80, 110], [240, 130, 110]], [6, [92, 110, 190], [200, 150, 170], [250, 190, 150]],
+    [20, [86, 128, 198], [150, 176, 218], [226, 190, 200]], [90, [70, 118, 200], [140, 172, 220], [220, 196, 208]]];
+  function skyAt(alt) {
+    let a = SK[0], b = SK[0];
+    if (alt >= SK[SK.length - 1][0]) a = b = SK[SK.length - 1];
+    else if (alt > SK[0][0]) for (let i = 1; i < SK.length; i++) if (alt <= SK[i][0]) { a = SK[i - 1]; b = SK[i]; break; }
+    const t = a === b ? 0 : (alt - a[0]) / (b[0] - a[0]);
+    return [1, 2, 3].map(j => "rgb(" + a[j].map((v, i) => Math.round(v + (b[j][i] - v) * t)).join(",") + ")");
+  }
+  function renderSky(t) {
+    const s = sunPos(t), c = skyAt(s.alt);
+    $("skyBg").style.background = "linear-gradient(to bottom," + c[0] + " 0%," + c[1] + " 52%," + c[2] + " 75%)";
+    $("stars").style.opacity = clamp((-5 - s.alt) / 9);
+    const sun = $("sun"), w = clamp(s.alt / 25);
+    sun.style.left = (50 + clamp(s.ha / 105, -1, 1) * 44) + "%";
+    sun.style.top = (79 - s.alt / 90 * 52) + "%";
+    sun.style.opacity = clamp((s.alt + 10) / 6);
+    sun.style.background = "radial-gradient(circle, rgb(255," + Math.round(150 + 105 * w) + "," + Math.round(90 + 110 * w) + ") 0 24%, rgba(255," + Math.round(160 + 60 * w) + ",110,.45) 38%, rgba(255,150,100,0) 70%)";
+  }
+
+  /* Tom do fundo da primeira tela: hora (0-24), r, g, b, opacidade */
+  const K = [[0, 8, 2, 30, .38], [5, 30, 6, 60, .26], [8, 120, 30, 60, .10], [12, 0, 0, 0, 0], [16, 150, 60, 40, .08], [18.5, 110, 40, 170, .22], [21, 50, 12, 90, .30], [24, 8, 2, 30, .38]];
+  function tintAt(h) {
+    for (let i = 1; i < K.length; i++) {
+      if (h <= K[i][0]) {
+        const a = K[i - 1], b = K[i], t = (h - a[0]) / (b[0] - a[0]), m = j => a[j] + (b[j] - a[j]) * t;
+        return "rgba(" + (m(1) | 0) + "," + (m(2) | 0) + "," + (m(3) | 0) + "," + m(4).toFixed(3) + ")";
+      }
+    }
+    return "rgba(0,0,0,0)";
+  }
+
+  function render() {
+    P = PLACES[prefs.place];
+    const now = new Date(), useStart = prefs.moon === "start" && hasStart, t = useStart ? startDate.getTime() : now.getTime();
+    const m = drawMoon(t), st = sunTimes(t);
+    $("skyTitle").textContent = useStart ? "O céu de " + fmtDate(startDate) + ", às " + fmtTime(startDate) + ", em " + P.short : "O céu de hoje em " + P.short;
+    $("mName").textContent = m.name;
+    $("mSub").textContent = m.il + "% iluminada";
+    $("sunLine").textContent = "Nascer do sol às " + fmtTime(new Date(st.rise)) + ", pôr do sol às " + fmtTime(new Date(st.set));
+    renderSky(t);
+    $("tint").style.backgroundColor = prefs.tint === "on" ? tintAt(now.getHours() + now.getMinutes() / 60) : "rgba(0,0,0,0)";
+    document.querySelectorAll("[data-moon],[data-tint],[data-place]").forEach(b => {
+      const k = b.dataset.moon ? "moon" : b.dataset.place ? "place" : "tint";
+      b.setAttribute("aria-pressed", String(b.dataset[k] === prefs[k]));
+    });
+  }
+
+  let stars = "";
+  for (let i = 0; i < 90; i++) {
+    stars += '<circle cx="' + (Math.random() * 100).toFixed(1) + '%" cy="' + (Math.random() * 68).toFixed(1) + '%" r="' + (Math.random() * 1.1 + .35).toFixed(2) +
+      '" fill="#ffe9f0" opacity="' + (Math.random() * .5 + .35).toFixed(2) + '"' +
+      (Math.random() < .25 ? ' class="tw" style="animation-delay:-' + (Math.random() * 6).toFixed(1) + 's"' : "") + "/>";
+  }
+  $("stars").innerHTML = stars;
+
+  if (hasStart) $("moonStartBtn").textContent = fmtDate(startDate);
+  document.querySelectorAll("[data-moon],[data-tint],[data-place]").forEach(b => b.addEventListener("click", () => {
+    if (b.dataset.moon) prefs.moon = b.dataset.moon;
+    if (b.dataset.place) prefs.place = b.dataset.place;
+    if (b.dataset.tint) prefs.tint = b.dataset.tint;
+    try { localStorage.setItem("sofia-prefs", JSON.stringify(prefs)); } catch (e) {}
+    render();
+  }));
+  render();
+  setInterval(render, 60000);
+})();
+
+/* ---------- Chuva de coracoes ---------- */
+(() => {
+  const cv = document.getElementById("sky");
+  const ctx = cv.getContext("2d");
+  const heart = new Path2D("M0 .9 C-.9 .1 -.95 -.45 -.5 -.7 C-.2 -.85 0 -.6 0 -.4 C0 -.6 .2 -.85 .5 -.7 C.95 -.45 .9 .1 0 .9Z");
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+
+  /* Tres camadas de profundidade: longe (pequeno, lento, escuro) ate perto (grande, rapido, claro) */
+  const LAYERS = [
+    { share: .45, size: [4, 7],   speed: [16, 36],   alpha: [.22, .38], tail: .9,  cols: [[150, 18, 48], [190, 24, 60], [225, 29, 72]] },
+    { share: .35, size: [7, 11],  speed: [38, 80],   alpha: [.40, .60], tail: .8,  cols: [[225, 29, 72], [244, 63, 94], [251, 113, 133]] },
+    { share: .20, size: [11, 17], speed: [100, 190], alpha: [.55, .80], tail: .55, cols: [[244, 63, 94], [251, 113, 133], [253, 164, 175]] }
+  ];
+  let W = 0, H = 0, ps = [], raf = 0, last = 0;
+
+  function spawn(p, L, first) {
+    const k = clamp(Math.min(W, H) / 900, .65, 1.25);
+    const kh = clamp(H / 900, .7, 1.3);
+    p.L = L;
+    p.size = rnd(L.size[0], L.size[1]) * k;
+    p.sp = rnd(L.speed[0], L.speed[1]) * kh;
+    p.len = p.size * 2.2 + p.sp * L.tail;
+    p.x = rnd(-.02, 1.02) * W;
+    p.y = first ? rnd(-.1, 1) * H : -p.len - p.size * 2 - rnd(0, H * .15);
+    p.ang = Math.PI / 2 + rnd(-.1, .1);       // quase vertical, leve diagonal
+    p.age = 0; p.ph = rnd(0, 6.28); p.sw = rnd(.3, .8);
+    p.rot0 = rnd(-.4, .4); p.rv = rnd(.4, 1);
+    p.col = L.cols[(Math.random() * L.cols.length) | 0];
+    p.max = rnd(L.alpha[0], L.alpha[1]);
+    p.fade = Math.random() < .3 ? rnd(.4, .85) * H : Infinity; // alguns somem pelo caminho
+  }
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = innerWidth; H = innerHeight;
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const n = clamp(Math.round(W * H / 24000), 24, 46);
+    ps = [];
+    LAYERS.forEach(L => {
+      for (let i = 0, c = Math.round(n * L.share); i < c; i++) { const p = {}; spawn(p, L, true); ps.push(p); }
+    });
+  }
+
+  function draw(dt) {
+    ctx.clearRect(0, 0, W, H);
+    for (const p of ps) {
+      p.age += dt;
+      const a = p.ang + Math.sin(p.age * p.sw + p.ph) * .12;   // balanco organico
+      const vx = Math.cos(a), vy = Math.sin(a);
+      p.x += vx * p.sp * dt; p.y += vy * p.sp * dt;
+      if (p.y - p.len > H || p.x < -60 || p.x > W + 60) { spawn(p, p.L, false); continue; }
+
+      let al = p.max;
+      al *= clamp((H - p.y) / (H * .16));                       // dissolve perto do fundo
+      al *= clamp((p.y + 10) / (H * .06));                      // entra suavemente no topo
+      if (p.fade !== Infinity) al *= 1 - clamp((p.y - p.fade) / (H * .18));
+      const dx = (p.x / W - .5) * 2, dy = (p.y / H - .5) * 2;
+      al *= .35 + .65 * clamp((Math.hypot(dx, dy * .75) - .22) / .5); // mais discreto atras do coracao e da frase
+      if (al < .012) continue;
+
+      const tx = p.x - vx * p.len, ty = p.y - vy * p.len;
+      const g = ctx.createLinearGradient(p.x, p.y, tx, ty);
+      g.addColorStop(0, "rgba(170,100,245," + (al * .5) + ")");
+      g.addColorStop(1, "rgba(124,58,237,0)");
+      ctx.strokeStyle = g; ctx.lineWidth = p.size * .26; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(tx, ty); ctx.stroke();
+
+      const rgb = p.col[0] + "," + p.col[1] + "," + p.col[2];
+      ctx.save();
+      ctx.translate(p.x, p.y); ctx.rotate(p.rot0 + Math.sin(p.age * p.rv) * .3); ctx.scale(p.size, p.size);
+      if (p.L === LAYERS[2]) {                                   // halo suave nos mais proximos
+        ctx.save(); ctx.scale(1.55, 1.55);
+        ctx.fillStyle = "rgba(" + rgb + "," + (al * .16) + ")"; ctx.fill(heart); ctx.restore();
+      }
+      ctx.fillStyle = "rgba(" + rgb + "," + al + ")"; ctx.fill(heart);
+      if (p.L !== LAYERS[0]) {                                   // pequeno reflexo
+        ctx.translate(-.22, -.3); ctx.scale(.36, .36);
+        ctx.fillStyle = "rgba(255,222,230," + (al * .35) + ")"; ctx.fill(heart);
+      }
+      ctx.restore();
+    }
+  }
+
+  function frame(t) {
+    draw(Math.min(.05, (t - last) / 1000)); last = t;
+    raf = requestAnimationFrame(frame);
+  }
+  function start() { if (!raf) { last = performance.now(); raf = requestAnimationFrame(frame); } }
+
+  addEventListener("resize", resize);
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) { cancelAnimationFrame(raf); raf = 0; } else start();
+  });
+  resize(); start();
+})();
+</script>
+</body>
+</html>
